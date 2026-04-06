@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>NewsAgent @cnn.ve</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f5f5f7;
+    --card: #ffffff;
+    --border: #e0e0e5;
+    --accent: #e63950;
+    --accent2: #f5a623;
+    --text: #111111;
+    --muted: #888888;
+    --green: #16a34a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding-bottom: 40px; }
+
+/* HEADER */
+.header { padding: 24px 18px 20px; border-bottom: 1px solid var(–border); margin-bottom: 20px; }
+.logo-tag { font-family: ‘DM Mono’, monospace; font-size: 10px; color: var(–accent); letter-spacing: 3px; text-transform: uppercase; }
+.logo-name { font-family: ‘Bebas Neue’, sans-serif; font-size: 40px; line-height: 1; letter-spacing: 2px; background: linear-gradient(120deg,#fff 50%,var(–accent) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.logo-sub { font-size: 13px; color: var(–muted); margin-top: 2px; }
+
+/* TABS */
+.tabs { display: flex; gap: 4px; margin: 0 18px 20px; background: var(–surface); padding: 4px; border-radius: 10px; }
+.tab { flex:1; padding:10px; border:none; background:transparent; color:var(–muted); font-family:‘DM Sans’,sans-serif; font-size:13px; font-weight:500; cursor:pointer; border-radius:7px; transition:all .2s; }
+.tab.on { background:var(–card); color:var(–text); }
+
+.pane { display:none; padding: 0 18px; }
+.pane.on { display:block; }
+
+/* TUTORIAL */
+.tut-box { background: linear-gradient(135deg,rgba(230,57,80,.12),rgba(245,166,35,.08)); border:1px solid rgba(230,57,80,.25); border-radius:14px; padding:20px; margin-bottom:16px; }
+.tut-title { font-family:‘Bebas Neue’,sans-serif; font-size:24px; letter-spacing:1px; margin-bottom:6px; }
+.tut-sub { font-size:13px; color:var(–muted); line-height:1.6; }
+
+.step { background:var(–card); border:1px solid var(–border); border-radius:14px; padding:18px; margin-bottom:12px; display:flex; gap:14px; }
+.step-n { min-width:34px; height:34px; background:var(–accent); border-radius:9px; display:flex; align-items:center; justify-content:center; font-family:‘Bebas Neue’,sans-serif; font-size:19px; color:#fff; flex-shrink:0; }
+.step-t { font-weight:600; font-size:14px; margin-bottom:6px; }
+.step-d { font-size:13px; color:var(–muted); line-height:1.7; }
+.step-d a { color:var(–accent); }
+.note { background:rgba(79,142,247,.08); border:1px solid rgba(79,142,247,.2); border-radius:9px; padding:12px 14px; margin-top:10px; font-size:12px; color:#a8c4ff; line-height:1.7; }
+.note.g { background:rgba(31,200,107,.07); border-color:rgba(31,200,107,.2); color:#85e8b8; }
+
+/* PANEL */
+.panel { background:var(–card); border:1px solid var(–border); border-radius:14px; padding:20px; margin-bottom:16px; }
+.plabel { font-size:10px; font-family:‘DM Mono’,monospace; color:var(–accent); letter-spacing:3px; text-transform:uppercase; margin-bottom:14px; }
+
+/* PROFILE */
+.profile { display:flex; align-items:center; gap:12px; background:var(–surface); border:1px solid var(–border); border-radius:10px; padding:12px 14px; margin-bottom:14px; }
+.avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(–accent),var(–accent2)); display:flex; align-items:center; justify-content:center; font-family:‘Bebas Neue’,sans-serif; font-size:14px; color:#fff; flex-shrink:0; }
+.pname { font-weight:600; font-size:14px; }
+.pmeta { font-size:12px; color:var(–muted); }
+.pbadge { margin-left:auto; background:rgba(31,200,107,.15); border:1px solid rgba(31,200,107,.3); color:var(–green); font-size:10px; font-family:‘DM Mono’,monospace; padding:3px 9px; border-radius:100px; flex-shrink:0; }
+
+/* FIELDS */
+.field { margin-bottom:14px; }
+label { display:block; font-size:12px; color:var(–muted); margin-bottom:6px; }
+input, select, textarea { width:100%; background:var(–surface); border:1px solid var(–border); border-radius:8px; padding:11px 13px; color:var(–text); font-family:‘DM Sans’,sans-serif; font-size:14px; outline:none; -webkit-appearance:none; }
+input:focus, select:focus, textarea:focus { border-color:var(–accent); }
+input[type=password] { font-family:‘DM Mono’,monospace; letter-spacing:3px; font-size:13px; }
+textarea { resize:vertical; min-height:70px; }
+.hint { font-size:11px; color:var(–muted); margin-top:5px; }
+.hint a { color:var(–accent); }
+
+/* KEY TOGGLE */
+.key-wrap { position:relative; }
+.key-wrap input { padding-right: 44px; }
+.eye { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(–muted); font-size:16px; cursor:pointer; padding:4px; }
+
+/* CHIPS */
+.chips { display:flex; flex-wrap:wrap; gap:7px; }
+.chip { padding:6px 13px; border-radius:100px; border:1px solid var(–border); background:transparent; color:var(–muted); font-size:13px; cursor:pointer; transition:all .2s; font-family:‘DM Sans’,sans-serif; }
+.chip.on { background:var(–accent); border-color:var(–accent); color:#fff; }
+
+/* BTN */
+.btn-gen { width:100%; padding:15px; background:var(–accent); border:none; border-radius:10px; color:#fff; font-family:‘Bebas Neue’,sans-serif; font-size:22px; letter-spacing:2px; cursor:pointer; margin-top:16px; display:flex; align-items:center; justify-content:center; gap:10px; }
+.btn-gen:disabled { background:var(–border); color:var(–muted); }
+
+.spinner { width:18px; height:18px; border:2px solid rgba(255,255,255,.3); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* PROGRESS */
+.prog { height:3px; background:var(–border); border-radius:2px; margin-top:12px; display:none; overflow:hidden; }
+.prog-fill { height:100%; background:linear-gradient(90deg,var(–accent),var(–accent2)); border-radius:2px; transition:width 30s ease-in-out; width:0%; }
+
+/* LOG */
+.logbox { background:var(–card); border:1px solid var(–border); border-radius:10px; padding:12px 14px; margin-top:14px; display:none; max-height:140px; overflow-y:auto; }
+.log-title { font-family:‘DM Mono’,monospace; font-size:10px; color:var(–muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:8px; }
+.ll { font-family:‘DM Mono’,monospace; font-size:11px; color:var(–muted); padding:2px 0; display:flex; gap:10px; }
+.lt { color:var(–accent); min-width:50px; }
+.lok { color:var(–green); }
+.linf { color:var(–accent2); }
+
+/* RESULTS */
+#results { margin-top:24px; }
+.rhead { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.rtitle { font-family:‘Bebas Neue’,sans-serif; font-size:26px; letter-spacing:1px; }
+.rbadge { background:var(–accent); color:#fff; font-size:11px; font-family:‘DM Mono’,monospace; padding:3px 10px; border-radius:100px; }
+
+.card { background:var(–card); border:1px solid var(–border); border-radius:14px; overflow:hidden; margin-bottom:18px; }
+.ctop { padding:16px 18px 12px; border-bottom:1px solid var(–border); display:flex; gap:12px; }
+.cnum { font-family:‘Bebas Neue’,sans-serif; font-size:30px; color:var(–accent); line-height:1; opacity:.4; min-width:34px; }
+.ctopic { font-size:10px; font-family:‘DM Mono’,monospace; color:var(–accent2); letter-spacing:2px; text-transform:uppercase; margin-bottom:4px; }
+.corig { font-size:13px; font-weight:600; line-height:1.4; margin-bottom:3px; }
+.csrc { font-size:11px; color:var(–muted); }
+
+.cbody { padding:16px 18px; }
+.iblk { margin-bottom:14px; }
+.ilbl { font-size:10px; font-family:‘DM Mono’,monospace; color:var(–muted); letter-spacing:2px; text-transform:uppercase; margin-bottom:6px; display:flex; align-items:center; gap:5px; }
+.ilbl::before { content:’’; width:3px; height:10px; background:var(–accent); border-radius:2px; }
+.ihead { font-family:‘Bebas Neue’,sans-serif; font-size:19px; letter-spacing:1px; line-height:1.2; background:var(–surface); padding:12px 14px; border-radius:8px; border:1px solid var(–border); }
+.itxt { font-size:13px; line-height:1.75; background:var(–surface); padding:12px 14px; border-radius:8px; border:1px solid var(–border); white-space:pre-wrap; }
+.itags { font-family:‘DM Mono’,monospace; font-size:11px; color:var(–accent); background:var(–surface); padding:10px 14px; border-radius:8px; border:1px solid var(–border); line-height:2; }
+.icta { font-size:13px; color:var(–accent2); background:var(–surface); padding:10px 14px; border-radius:8px; border:1px solid var(–border); font-style:italic; }
+
+.cfoot { padding:12px 18px; border-top:1px solid var(–border); display:flex; gap:8px; flex-wrap:wrap; }
+.btn { padding:9px 16px; border-radius:8px; font-size:13px; font-weight:500; cursor:pointer; border:none; font-family:‘DM Sans’,sans-serif; transition:all .15s; }
+.bok { background:var(–green); color:#fff; flex:1; min-width:120px; display:flex; align-items:center; justify-content:center; gap:5px; }
+.bcp { background:transparent; color:var(–muted); border:1px solid var(–border); display:flex; align-items:center; gap:4px; }
+.bcp.done { border-color:var(–green); color:var(–green); }
+.bdel { background:transparent; color:var(–muted); border:1px solid var(–border); }
+.appr { flex:1; background:rgba(31,200,107,.08); border:1px solid rgba(31,200,107,.25); border-radius:8px; padding:9px 14px; font-size:13px; color:var(–green); display:flex; align-items:center; gap:6px; }
+.rejected { opacity:.25; pointer-events:none; }
+</style>
+
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-tag">● Agente de noticias</div>
+  <div class="logo-name">NewsAgent</div>
+  <div class="logo-sub">Para @cnn.ve — Centro Nacional de Noticias 🇻🇪</div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="tab('tutorial',this)">📖 Cómo usarlo</button>
+  <button class="tab" onclick="tab('agent',this)">⚡ Generar posts</button>
+</div>
+
+<!-- ══ TUTORIAL ══ -->
+
+<div class="pane on" id="pane-tutorial">
+  <div class="tut-box">
+    <div class="tut-title">Guía para @cnn.ve</div>
+    <div class="tut-sub">Sin conocimientos técnicos. 4 pasos y tendrás posts listos en 2 minutos.</div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">1</div>
+    <div>
+      <div class="step-t">Obtén tu API Key de Anthropic</div>
+      <div class="step-d">
+        Es el código que conecta el agente con la IA.<br><br>
+        1. Ve a <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a><br>
+        2. Crea cuenta con tu email<br>
+        3. Toca <strong>"API Keys"</strong> → <strong>"Create Key"</strong><br>
+        4. Copia el código que empieza con <strong>sk-ant-</strong><br>
+        5. Guárdalo en tus Notas del iPhone
+        <div class="note">💳 Con $5 USD tienes para meses de uso. Generar 5 posts cuesta menos de $0.01.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">2</div>
+    <div>
+      <div class="step-t">Pega tu API Key en la app</div>
+      <div class="step-d">
+        Ve a la pestaña <strong>"⚡ Generar posts"</strong> y pega tu código en el campo de arriba. Solo tienes que hacerlo una vez por sesión.
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">3</div>
+    <div>
+      <div class="step-t">Selecciona temas y genera</div>
+      <div class="step-d">
+        Activa los temas que quieres cubrir ese día y toca <strong>"Generar Posts"</strong>. El agente buscará noticias reales y redactará el contenido. Espera unos 30 segundos.
+        <div class="note g">✅ Recibirás: titular, caption, hashtags y llamada a la acción para cada noticia.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-n">4</div>
+    <div>
+      <div class="step-t">Copia y publica en Instagram tú mismo</div>
+      <div class="step-d">
+        Revisa cada post. Toca <strong>📋 Copiar</strong> en los que te gusten y pégalos directamente en Instagram. El agente nunca publica nada por su cuenta.
+      </div>
+    </div>
+  </div>
+
+<button class="btn-gen" onclick="tab('agent',null)">⚡ IR A GENERAR POSTS</button>
+
+</div>
+
+<!-- ══ AGENT ══ -->
+
+<div class="pane" id="pane-agent">
+
+  <div class="panel">
+    <div class="plabel">🔑 API Key de Anthropic</div>
+    <div class="field">
+      <label>Pega aquí tu código sk-ant-...</label>
+      <div class="key-wrap">
+        <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+        <button class="eye" onclick="toggleKey()">👁</button>
+      </div>
+      <div class="hint">¿No tienes una? Ve a la pestaña "Cómo usarlo" → Paso 1</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="plabel">📱 Tu cuenta</div>
+    <div class="profile">
+      <div class="avatar">CNN</div>
+      <div>
+        <div class="pname">@cnn.ve</div>
+        <div class="pmeta">Centro Nacional de Noticias · 345K seguidores</div>
+      </div>
+      <div class="pbadge">✓ Activo</div>
+    </div>
+    <div class="field">
+      <label>Tono del contenido</label>
+      <select id="tone">
+        <option value="serio y periodístico, basado en hechos, sin opiniones">Serio y periodístico</option>
+        <option value="informativo y neutral">Informativo y neutral</option>
+        <option value="urgente, de última hora">Urgente — Última hora</option>
+        <option value="analítico y profundo">Analítico y profundo</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Cantidad de posts a generar</label>
+      <select id="qty">
+        <option value="3">3 posts</option>
+        <option value="5" selected>5 posts</option>
+        <option value="7">7 posts</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Instrucciones especiales (opcional)</label>
+      <textarea id="extra">Siempre incluye 🇻🇪 en el caption. Prioriza noticias de Venezuela. Usa lenguaje claro y directo. El titular debe generar urgencia informativa.</textarea>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="plabel">📌 Temas del día</div>
+    <div class="chips" id="chips">
+      <button class="chip on" data-t="Venezuela">🇻🇪 Venezuela</button>
+      <button class="chip on" data-t="Política venezolana">🏛️ Política</button>
+      <button class="chip on" data-t="Internacional y América Latina">🌎 Internacional</button>
+      <button class="chip on" data-t="Economía">📈 Economía</button>
+      <button class="chip on" data-t="Derechos humanos">⚖️ Derechos Humanos</button>
+      <button class="chip on" data-t="Seguridad">🔒 Seguridad</button>
+      <button class="chip" data-t="Tecnología">💻 Tecnología</button>
+      <button class="chip" data-t="Salud">🏥 Salud</button>
+      <button class="chip" data-t="Deportes venezolanos">⚽ Deportes</button>
+      <button class="chip" data-t="Migración venezolana">✈️ Migración</button>
+      <button class="chip" data-t="EE.UU. y Venezuela">🇺🇸 EE.UU.</button>
+      <button class="chip" data-t="Entretenimiento">🎬 Entretenimiento</button>
+    </div>
+  </div>
+
+  <button class="btn-gen" id="genBtn" onclick="run()">
+    <span id="bIcon">⚡</span>
+    <span id="bTxt">GENERAR POSTS</span>
+  </button>
+  <div class="prog" id="prog"><div class="prog-fill" id="progFill"></div></div>
+
+  <div class="logbox" id="logbox">
+    <div class="log-title">// Registro del agente</div>
+    <div id="logLines"></div>
+  </div>
+
+  <div id="results" style="display:none">
+    <div class="rhead">
+      <span class="rtitle">Posts generados</span>
+      <span class="rbadge" id="rbadge">0</span>
+    </div>
+    <div id="cardList"></div>
+  </div>
+
+</div>
+
+<script>
+// ── TABS
+function tab(name, btn) {
+  document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById('pane-' + name).classList.add('on');
+  if (btn) btn.classList.add('on');
+  else document.querySelectorAll('.tab')[name==='tutorial'?0:1].classList.add('on');
+  window.scrollTo(0,0);
+}
+
+// ── KEY TOGGLE
+function toggleKey() {
+  const f = document.getElementById('apiKey');
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+
+// ── CHIPS
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => c.classList.toggle('on')));
+function topics() { return [...document.querySelectorAll('.chip.on')].map(c => c.dataset.t); }
+
+// ── LOG
+function log(txt, type) {
+  const box = document.getElementById('logbox');
+  box.style.display = 'block';
+  const t = new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d = document.createElement('div');
+  d.className = 'll';
+  const cls = type==='ok'?'lok':type==='inf'?'linf':'';
+  d.innerHTML = `<span class="lt">${t}</span><span class="${cls}">${txt}</span>`;
+  document.getElementById('logLines').appendChild(d);
+  box.scrollTop = 9999;
+}
+
+// ── PROGRESS
+function startProg() {
+  const p = document.getElementById('prog');
+  const f = document.getElementById('progFill');
+  p.style.display = 'block';
+  f.style.width = '0%';
+  setTimeout(()=>{ f.style.width='88%'; }, 100);
+}
+function endProg() {
+  document.getElementById('progFill').style.width = '100%';
+  setTimeout(()=>{ document.getElementById('prog').style.display='none'; }, 800);
+}
+
+// ── CLAUDE CON BÚSQUEDA WEB EN TIEMPO REAL
+async function claudeWithSearch(key, sys, usr) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90000);
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      signal: controller.signal,
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system:sys,
+        tools:[{"type":"web_search_20250305","name":"web_search"}],
+        messages:[{role:'user',content:usr}]
+      })
+    });
+    clearTimeout(timeout);
+    if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || `Error ${r.status}`); }
+    const d = await r.json();
+    return d.content.map(b=>b.text||'').filter(Boolean).join('');
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name==='AbortError') throw new Error('Tiempo agotado. Intenta de nuevo.');
+    throw e;
+  }
+}
+
+// ── CLAUDE
+async function claude(key, sys, usr) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 90000);
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method:'POST',
+      signal: controller.signal,
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key': key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body: JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:4000,
+        system:sys,
+        messages:[{role:'user',content:usr}]
+      })
+    });
+    clearTimeout(timeout);
+    if (!r.ok) { const e = await r.json(); throw new Error(e.error?.message || `Error ${r.status}`); }
+    const d = await r.json();
+    return d.content.map(b=>b.text||'').join('');
+  } catch(e) {
+    clearTimeout(timeout);
+    if (e.name==='AbortError') throw new Error('Tiempo agotado. Intenta de nuevo.');
+    throw e;
+  }
+}
+
+function parseJ(raw) {
+  const c = raw.replace(/```json|```/g,'').trim();
+  try { return JSON.parse(c); } catch(_) {
+    const m = c.match(/\[[\s\S]*\]/);
+    if (m) return JSON.parse(m[0]);
+    throw new Error('Error al interpretar la respuesta. Intenta de nuevo.');
+  }
+}
+
+// ── MAIN
+let posts = [];
+async function run() {
+  const key = document.getElementById('apiKey').value.trim();
+  if (!key || !key.startsWith('sk-')) {
+    alert('⚠️ Por favor pega tu API Key.\n\nDebe empezar con "sk-ant-"\n\nVe a "Cómo usarlo" → Paso 1 si no tienes una.');
+    return;
+  }
+  const tps = topics();
+  if (!tps.length) { alert('Selecciona al menos un tema.'); return; }
+
+  const btn = document.getElementById('genBtn');
+  btn.disabled = true;
+  document.getElementById('bIcon').innerHTML = '<div class="spinner"></div>';
+  document.getElementById('bTxt').textContent = 'GENERANDO...';
+  document.getElementById('logLines').innerHTML = '';
+  document.getElementById('logbox').style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('cardList').innerHTML = '';
+  posts = [];
+
+  startProg();
+  log('🚀 Iniciando agente para @cnn.ve...');
+  log(`📌 Temas: ${tps.join(', ')}`, 'inf');
+
+  try {
+    log('🔍 Buscando noticias recientes...', 'inf');
+
+    const qty = document.getElementById('qty').value;
+    const today = new Date().toLocaleDateString('es', {day:'numeric', month:'long', year:'numeric'});
+
+    // Búsqueda web en tiempo real usando la herramienta de búsqueda de Claude
+    const newsRaw = await claudeWithSearch(key,
+      `Eres un agente periodístico especializado en Venezuela y América Latina. Hoy es ${today}. Usa la herramienta de búsqueda web para encontrar noticias REALES publicadas HOY o en las últimas 24 horas. Responde SOLO con JSON válido, sin texto extra, sin backticks.`,
+      `Busca en internet noticias publicadas HOY (${today}) sobre: ${tps.join(', ')}. Prioriza estas agencias y medios internacionales: Reuters, Associated Press (AP), AFP, BBC, CNN, The New York Times, The Washington Post, El País, France 24, DW, Al Jazeera, Bloomberg, NTN24, CNN en Español. Si la noticia está en otro idioma, tradúcela al español. Devuelve exactamente ${qty} noticias en este JSON: [{"titulo":"título real de la noticia en español","fuente":"nombre del medio","resumen":"2-3 oraciones con los hechos clave en español","tema":"categoría","fecha":"fecha de publicación"}]`
+    );
+    const newsItems = parseJ(newsRaw);
+    log(`✅ ${newsItems.length} noticias encontradas`, 'ok');
+
+    log('✍️ Generando contenido para Instagram...', 'inf');
+    const tone = document.getElementById('tone').value;
+    const extra = document.getElementById('extra').value.trim();
+
+    const igSys = `Eres un periodista digital experto en redes sociales, especializado en contenido informativo para Venezuela y América Latina. Creas posts de Instagram con rigor periodístico. Responde SOLO con JSON válido, sin texto extra, sin backticks.`;
+    const igUsr = `Genera posts de Instagram para @cnn.ve (Centro Nacional de Noticias Venezuela, 345K seguidores).
+Tono: ${tone}. Instrucciones adicionales: ${extra}
+
+Noticias:
+${JSON.stringify(newsItems,null,2)}
+
+ESTÁNDARES PERIODÍSTICOS OBLIGATORIOS — Escribe como un periodista profesional aplicando todos estos parámetros:
+
+LAS 6 PREGUNTAS BÁSICAS DEL PERIODISMO (respóndelas todas):
+1. ¿QUÉ? — El hecho noticioso concreto
+2. ¿QUIÉN? — Nombres completos y cargos de todos los protagonistas
+3. ¿CUÁNDO? — Fecha exacta y hora si está disponible
+4. ¿DÓNDE? — Ciudad y país donde ocurrió
+5. ¿POR QUÉ? — Causa o motivo del hecho
+6. ¿CÓMO? — De qué manera ocurrió o se desarrolló
+
+INCLUYE OBLIGATORIAMENTE:
+- Declaraciones textuales o parafraseadas con nombres y cargos de quien habló
+- Cifras, estadísticas y datos concretos
+- Contexto histórico breve que explique la importancia de la noticia
+- Impacto o consecuencias para Venezuela o la región latinoamericana
+- Reacciones de otras partes involucradas si las hay
+- 📰 Fuente: [nombre del medio] al final del caption
+
+ESTRUCTURA:
+- Párrafo 1 (LEAD): El hecho más importante — qué, quién, cuándo y dónde
+- Párrafo 2 (CUERPO): Declaraciones, cifras, contexto y cómo ocurrió
+- Párrafo 3 (CIERRE): Impacto, consecuencias y relevancia para Venezuela y la región
+- Línea final: 📰 Fuente: [nombre del medio]
+
+TONO: Objetivo, verificable, sin opiniones, lenguaje claro y accesible para todo público.
+
+Responde con este JSON:
+[{"titular":"TITULAR IMPACTANTE MÁXIMO 10 PALABRAS EN MAYÚSCULAS","caption":"caption completo con emojis, los 3 párrafos con fecha+lugar+nombres+datos+fuente, máximo 250 palabras","cta":"pregunta concreta relacionada con la noticia para generar comentarios","hashtags":"#Venezuela #Noticias + 8 hashtags relevantes y específicos del tema","tema":"tema","fuente":"fuente","tituloOriginal":"título original de la noticia"}]`;
+
+    const igRaw = await claude(key, igSys, igUsr);
+    posts = parseJ(igRaw);
+
+    log(`✅ ${posts.length} posts generados`, 'ok');
+    renderCards(posts);
+    endProg();
+    log('🚀 ¡Listo! Revisa y copia los posts que quieras publicar.', 'ok');
+    tab('agent', null);
+
+  } catch(err) {
+    endProg();
+    log(`❌ ${err.message}`);
+    alert('Error: ' + err.message + '\n\nVerifica que tu API Key sea correcta.');
+  } finally {
+    btn.disabled = false;
+    document.getElementById('bIcon').textContent = '⚡';
+    document.getElementById('bTxt').textContent = 'GENERAR POSTS';
+  }
+}
+
+// ── RENDER
+function renderCards(data) {
+  const res = document.getElementById('results');
+  const list = document.getElementById('cardList');
+  res.style.display = 'block';
+  document.getElementById('rbadge').textContent = data.length;
+  list.innerHTML = '';
+  data.forEach((p,i) => {
+    const c = document.createElement('div');
+    c.className = 'card'; c.id = `c${i}`;
+    c.innerHTML = `
+      <div class="ctop">
+        <div class="cnum">0${i+1}</div>
+        <div>
+          <div class="ctopic">${p.tema||'Noticia'}</div>
+          <div class="corig">${p.tituloOriginal||''}</div>
+          <div class="csrc">📰 ${p.fuente||''}</div>
+        </div>
+      </div>
+      <div class="cbody">
+        <div class="iblk"><div class="ilbl">Titular Instagram</div><div class="ihead">${p.titular}</div></div>
+        <div class="iblk"><div class="ilbl">Caption</div><div class="itxt">${p.caption}</div></div>
+        <div class="iblk"><div class="ilbl">Llamada a la acción</div><div class="icta">${p.cta}</div></div>
+        <div class="iblk"><div class="ilbl">Hashtags</div><div class="itags">${p.hashtags}</div></div>
+      </div>
+      <div class="cfoot" id="f${i}">
+        <button class="btn bok" onclick="approve(${i})">✓ Aprobar</button>
+        <button class="btn bcp" onclick="copy(this,${i})">📋 Copiar</button>
+        <button class="btn bdel" onclick="reject(${i})">✕</button>
+      </div>`;
+    list.appendChild(c);
+  });
+  res.scrollIntoView({behavior:'smooth'});
+}
+
+function approve(i) {
+  document.getElementById(`f${i}`).innerHTML = `
+    <div class="appr">✅ Aprobado — listo para publicar</div>
+    <button class="btn bcp" onclick="copy(this,${i})">📋 Copiar</button>`;
+}
+function reject(i) { document.getElementById(`c${i}`).classList.add('rejected'); }
+function copy(btn, i) {
+  const p = posts[i];
+  navigator.clipboard.writeText(`${p.titular}\n\n${p.caption}\n\n${p.cta}\n\n${p.hashtags}`).then(()=>{
+    btn.textContent='✓ Copiado'; btn.classList.add('done');
+    setTimeout(()=>{ btn.textContent='📋 Copiar'; btn.classList.remove('done'); }, 2000);
+  });
+}
+</script>
+
+</body>
+</html>
